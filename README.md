@@ -32,7 +32,7 @@ brew install ripgrep fd fzf duckdb git-delta xh watchexec just semgrep ast-grep 
 | ast-grep | ✓ | 0.45.1 |
 | gh | ✓ | 2.92.0 |
 
-Verified 2026-08-21 by `scripts/agent-tooling/verify.sh`.
+Verified 2026-08-21 by `agent-tooling/scripts/verify.sh`.
 <!-- END GENERATED: agent-tooling -->
 
 ## Search & File Lookup

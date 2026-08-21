@@ -1,0 +1,36 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get update && sudo apt-get install -y shellcheck
+
+      - name: shellcheck
+        run: shellcheck -x agent-tooling/scripts/*.sh
+
+      - name: bash syntax
+        run: |
+          for f in agent-tooling/scripts/*.sh; do
+            bash -n "$f"
+          done
+
+      - name: SKILL.md metadata
+        run: |
+          test -f agent-tooling/SKILL.md
+          head -n 6 agent-tooling/SKILL.md | grep -q '^name: agent-tooling'
+          grep -q '^description:' agent-tooling/SKILL.md
+          grep -q 'BEGIN GENERATED: agent-tooling' agent-tooling/template.TOOLS.md
+
+      - name: Smoke test (verify may legitimately exit 1 on a bare runner)
+        working-directory: agent-tooling
+        run: |
+          bash scripts/verify.sh || [ $? -eq 1 ]
+          bash scripts/audit.sh > /dev/null

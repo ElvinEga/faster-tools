@@ -1,18 +1,19 @@
-# Agent tooling workflows (see skills/agent-tooling/SKILL.md)
+# Agent tooling workflows (see agent-tooling/SKILL.md)
 default:
     @just --list
 
 # Verify all core agent tools are installed and runnable
 verify:
-    bash scripts/agent-tooling/verify.sh
+    bash agent-tooling/scripts/verify.sh
 
 # Read-only audit of environment + project stack
 audit:
-    bash scripts/agent-tooling/audit.sh
+    bash agent-tooling/scripts/audit.sh
+
+# Diagnose environment, configs, and toolchain mismatches
+doctor:
+    bash agent-tooling/scripts/doctor.sh
 
 # Install missing core tools (or named ones): just install / just install duckdb
 install *tools:
-    bash scripts/agent-tooling/install.sh --yes {{tools}}
-
-# Full health check: verify + audit
-doctor: verify audit
+    bash agent-tooling/scripts/install.sh --yes {{tools}}
