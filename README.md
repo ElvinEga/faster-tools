@@ -12,6 +12,29 @@ brew install ripgrep fd fzf duckdb git-delta xh watchexec just semgrep ast-grep 
 
 ---
 
+## Installed Agent Tooling
+
+<!-- BEGIN GENERATED: agent-tooling -->
+<!-- Regenerate via `just verify` (skills/agent-tooling). Do not edit inside this block. -->
+
+| Tool | Status | Version |
+|------|--------|---------|
+| rg | ✓ | ripgrep 15.2.0 |
+| fd | ✓ | fd 10.4.2 |
+| fzf | ✓ | 0.74.3 |
+| jq | ✓ | 1.7.1 |
+| duckdb | ✓ | 1.5.5 |
+| delta | ✓ | 0.19.2 |
+| xh | ✓ | 0.26.2 |
+| watchexec | ✓ | 2.5.1 |
+| just | ✓ | 1.58.0 |
+| semgrep | ✓ | 1.173.0 |
+| ast-grep | ✓ | 0.45.1 |
+| gh | ✓ | 2.92.0 |
+
+Verified 2026-08-21 by `scripts/agent-tooling/verify.sh`.
+<!-- END GENERATED: agent-tooling -->
+
 ## Search & File Lookup
 
 ### ripgrep (`rg`) — use INSTEAD of `grep`
