@@ -7,7 +7,7 @@
 ## One-line install (fresh machines)
 
 ```bash
-brew install ripgrep fd fzf duckdb git-delta xh watchexec just semgrep
+brew install ripgrep fd fzf duckdb git-delta xh watchexec just semgrep ast-grep gh
 ```
 
 ---
@@ -59,6 +59,22 @@ fd -e ts | fzf                 # pick a file to edit
 git branch | fzf               # pick a branch
 ```
 
+### ast-grep — AST-aware search & rewrite (use INSTEAD of regex for code structure)
+
+Text search re-derives structure every time; ast-grep parses the AST so patterns survive formatting and match by syntax, not bytes.
+
+```bash
+ast-grep -p 'console.log($A)' src/                             # find pattern ($A = metavariable)
+ast-grep -p 'console.log($A)' -r 'logger.debug($A)' src/       # rewrite in place
+ast-grep scan                                                  # run rule files from sgconfig.yml
+ast-grep -l ts -p 'await fetch($U)'                            # filter by language
+```
+
+> [!warning] Command name changed
+> The `sg` alias is **deprecated** as of ast-grep 0.45. Use `ast-grep` as the command.
+
+Reach for `rg` for plain text/config; reach for `ast-grep` when the target is code structure (function calls, imports, JSX props).
+
 ---
 
 ## Data Analysis
@@ -103,6 +119,16 @@ xh --check-status GET https://api.example.com/health
 
 Keep `curl` only where `xh` genuinely can't do the job (odd protocols, streaming).
 
+### gh — GitHub CLI (use INSTEAD of raw REST calls / browser for PR work)
+
+```bash
+gh pr create --fill                       # PR from current branch
+gh pr checks --watch                      # block on CI
+gh pr view 123 --json state,reviews       # structured output, no scraping
+gh issue list --label bug --limit 20
+gh run view --log-failed                  # only failing logs, not the firehose
+```
+
 ---
 
 ## Automation & Task Running
@@ -137,6 +163,20 @@ run env="dev":
 
 ## Deterministic Verification
 
+> [!important] Feedback-loop principle
+> Any deterministic checker (semgrep, linters, type checkers, tests) beats LLM judgment alone. Wire them into loops; let the LLM fix what they flag.
+
+### Post-edit loop (edit → verify → fix) — mandatory after any non-trivial edit
+
+| Language | Run | Then |
+|----------|-----|------|
+| Python | `ruff check . && ruff format .` | `pytest` |
+| TypeScript/JS | `tsc --noEmit` + Biome/ESLint | test runner |
+| Go | `go vet ./... && go test ./...` (+ `staticcheck`) | — |
+| Rust | `cargo check` then `clippy` | `cargo test` |
+
+Fix everything checkers report before declaring done. Tests are the ultimate truth.
+
 ### semgrep — static analysis with real rules, not vibes
 
 The difference between *"the AI thinks this looks like SQL injection"* and *"semgrep rule `python.django.security.injection.sql` flagged this line"* is the difference between opinion and evidence. Run it as part of security reviews and before claiming code is safe:
@@ -147,8 +187,7 @@ semgrep --config p/python .
 semgrep --config p/owasp-top-ten src/
 ```
 
-> [!important] Feedback-loop principle
-> Any deterministic checker (semgrep, linters, type checkers, tests) beats LLM judgment alone. Wire them into loops; let the LLM fix what they flag.
+Security claims must cite semgrep findings, never eyeballing.
 
 ---
 
@@ -159,9 +198,11 @@ semgrep --config p/owasp-top-ten src/
 | Search file contents | `rg` | `grep -r` |
 | Find files | `fd` | `find . -name` |
 | Interactive pick | `fzf` | numbered menus |
+| AST-aware code search/rewrite | `ast-grep` | regex over source |
 | Analyze CSV/JSON/Parquet | `duckdb -c "SQL"` | Python scripts, long jq chains |
 | View diffs | `git diff \| delta` | raw diff |
 | Test HTTP endpoints | `xh` | `curl -v` |
+| PR / issue / CI interaction | `gh` | raw REST, browser |
 | Re-run on change | `watchexec` | sleep/poll loops |
 | Project task runner | `just` | Makefile |
 | Security/static review | `semgrep` | eyeballing |
@@ -169,7 +210,7 @@ semgrep --config p/owasp-top-ten src/
 ## Environment Notes
 
 - macOS (Apple Silicon), Homebrew at `/opt/homebrew/bin`
-- All nine tools verified installed 2026-08-21
+- All eleven tools verified installed 2026-08-21 (`ast-grep` 0.45.1 added; `sg` alias deprecated)
 - Reproducibility tip from the source article: version-control this setup via Nix flakes or dev containers so agent tooling ships with the repo
 
 ## Source
