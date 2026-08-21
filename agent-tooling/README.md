@@ -1,77 +1,101 @@
-# agent-tooling
+# Agent Tooling
 
-A portable [Agent Skill](https://skills.sh) that audits, sets up, and
-diagnoses the CLI environment used by AI coding agents — on any OS, for any
-agent (Claude Code, OpenCode, Codex, Gemini CLI).
+[![skills.sh](https://skills.sh/b/OWNER/REPO)](https://skills.sh/OWNER/REPO)
 
-> Install once → works everywhere. The skill is the orchestration layer;
-> `TOOLS.md` is its output.
+A reusable Agent Skill for **auditing and optimizing the CLI environment for AI coding agents**.
 
-## What it does
+It helps agents discover available tools, identify missing or broken tooling, understand the project stack, and recommend a better development environment.
 
-| Mode | Say | Effect |
-|------|-----|--------|
-| **Audit** | "Audit my agent tooling" | Read-only report: environment, stack, missing/broken/redundant tools |
-| **Setup** | "Set up this machine for AI coding agents" | Recommend → approval → install → configure → verify → emit `TOOLS.md` |
-| **Doctor** | "Why is my agent environment broken?" | Diagnose PATH, versions, configs, lockfile/toolchain mismatches |
-
-Core tools it manages: `rg`, `fd`, `fzf`, `jq`, `duckdb`, `delta`, `xh`,
-`watchexec`, `just`, `semgrep`, `ast-grep`, `gh`.
-
-Cross-platform: Homebrew / apt / dnf / pacman / apk / nix / winget / choco /
-scoop are detected at runtime; distro binary differences (`fdfind`) are
-handled. No package manager is assumed.
+Works with agents such as **Codex, Claude Code, Gemini, OpenCode, Cursor, and more**.
 
 ## Install
 
-```bash
-git clone <this-repo> && cd agent-tooling
-
-# OpenCode (auto-scans ~/.agents/skills)
-mkdir -p ~/.agents/skills && ln -s "$PWD" ~/.agents/skills/agent-tooling
-
-# Claude Code
-mkdir -p ~/.claude/skills && ln -s "$PWD" ~/.claude/skills/agent-tooling
-```
-
-Restart the agent. Codex/Gemini users: point `AGENTS.md`/`GEMINI.md` at
-`SKILL.md` (see `references/agents.md`).
-
-## Standalone usage (no agent required)
+Using the `skills` CLI:
 
 ```bash
-bash scripts/verify.sh          # STATUS<TAB>tool<TAB>version per tool; exit 1 if gaps
-bash scripts/audit.sh           # read-only environment + project-stack audit
-bash scripts/doctor.sh          # verify + config + toolchain mismatch diagnosis
-bash scripts/install.sh --yes   # install all missing core tools (asks via --yes)
+npx skills add OWNER/REPO
 ```
 
-## Layout
+Replace `OWNER/REPO` with this repository's GitHub path.
 
+Prefer a symlink so updates propagate (see [references/agents.md](references/agents.md) for per-agent paths):
+
+```bash
+ln -s "$PWD" ~/.agents/skills/agent-tooling   # OpenCode auto-scans this
+ln -s "$PWD" ~/.claude/skills/agent-tooling   # Claude Code
 ```
-SKILL.md              the skill (frontmatter + instructions)
-scripts/lib.sh        platform detection shared by all scripts
-scripts/verify.sh     deterministic tool verification
-scripts/audit.sh      read-only machine + stack audit
-scripts/install.sh    approval-gated installer
-scripts/doctor.sh     full diagnosis
-references/tools.md   per-OS package catalog + gotchas
-references/agents.md  where each agent loads skills from
-template.TOOLS.md     output template with managed markers
+
+After installing, ask your agent:
+
+```text
+Audit my agent tooling environment.
 ```
+
+Or:
+
+```text
+Set up my machine for AI coding agents.
+```
+
+No agent needed — the scripts run standalone:
+
+```bash
+bash scripts/verify.sh          # STATUS<TAB>tool<TAB>version; exit 1 if gaps
+bash scripts/audit.sh           # read-only machine + project-stack audit
+bash scripts/doctor.sh          # configs, PATH, toolchain mismatches
+bash scripts/install.sh --yes   # approval-gated installer
+```
+
+## What it checks
+
+* 🔎 Search & file discovery — `rg`, `fd`, `fzf`
+* 🧠 AST-aware search & rewrite — `ast-grep`
+* 📊 Data analysis — `duckdb`
+* 🔀 Git — `git-delta`, `gh`
+* 🌐 APIs — `xh`
+* ⚡ Automation — `watchexec`, `just`
+* 🛡️ Static analysis — `semgrep`
+* 📦 Package managers and development environments
+
+Cross-platform: Homebrew, apt, dnf, pacman, apk, nix, winget, choco, and scoop are detected at runtime — nothing is assumed. The skill **doesn't blindly install everything**. It first audits the environment and project, then recommends relevant improvements.
+
+## Example
+
+```text
+Agent Tooling Doctor
+
+✓ ripgrep        ✓ duckdb         ✓ just
+✓ fd             ✓ git-delta      ✓ semgrep
+✓ fzf            ✓ xh             ✓ ast-grep
+
+Project
+✓ Bun
+✓ TypeScript
+✓ Rust
+✓ Tauri
+
+Recommendations
+! Configure git-delta for agent-friendly diffs
+! Add a repository task runner
+```
+
+## `TOOLS.md`
+
+The skill can create or maintain a `TOOLS.md` file describing the preferred tooling and commands for AI agents working in a repository.
+
+This keeps **machine/tooling knowledge separate from `AGENTS.md`**, which can focus on project-specific behavior and instructions.
+
+## Learn more
+
+* [skills.sh](https://www.skills.sh) — Discover skills
+* [Skills documentation](https://www.skills.sh/docs) — Getting started
+* [Skills CLI documentation](https://www.skills.sh/docs/cli) — Install and manage skills
+* [Skills GitHub repository](https://github.com/vercel-labs/skills) — CLI source
 
 ## Security
 
-- Nothing installs without an explicit `--yes` / user approval.
-- No `curl | bash`; manual fallbacks are documented instead.
-- Config changes (e.g. git pager) are proposed as diffs first.
-- Scripts are read-only except `install.sh`.
-
-## Validation
-
-CI runs shellcheck, bash syntax checks, SKILL.md metadata checks, and a
-smoke test on every push (see `.github/workflows/validate.yml`).
+Review a skill before installing it on a machine you care about. skills.sh performs security audits, but does not guarantee the security or quality of every listed skill. Nothing installs without an explicit `--yes`; config changes are proposed before being made.
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT
